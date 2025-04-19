@@ -40,7 +40,7 @@ app.get("/", async (req, res) => {
       response.headers.location
     ) {
       console.log(`Redirecting to: ${response.headers.location}`);
-      return res.redirect(response.headers.location);
+      return res.redirect(response.headers.url);
     }
 
     // Forward status code
