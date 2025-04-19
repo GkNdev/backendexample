@@ -1,185 +1,139 @@
 const express = require("express");
-const cors = require("cors");
+const axios = require("axios");
+const http = require("http");
 const https = require("https");
+const url = require("url");
+const path = require("path");
+
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
-// Enable CORS for all routes
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+// Create axios instance with longer timeout
+const client = axios.create({
+  timeout: 30000,
+  httpAgent: new http.Agent({ keepAlive: true }),
+  httpsAgent: new https.Agent({ keepAlive: true }),
+});
 
-app.get("/", async (req, res) => {
-  const targetUrl = "https://vavoo.to/play/1536730627/index.m3u8";
+// Main endpoint to proxy the master m3u8 file
+app.get("/stream", async (req, res) => {
+  try {
+    const sourceUrl = "https://vavoo.to/play/1536730627/index.m3u8";
+    const response = await client.get(sourceUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+      },
+    });
 
-  console.log(`Requesting: ${targetUrl}`);
+    // Get the final URL after any redirects
+    const finalUrl = response.request.res.responseUrl || sourceUrl;
+    console.log("Final URL:", finalUrl);
 
-  // Instead of redirecting, we'll get the content and serve it directly
-  const options = {
-    headers: {
-      "User-Agent": "VAVOO/1.0",
-      Accept: "*/*",
-      "Accept-Language": "en-US,en;q=0.9",
-      Referer: "https://vavoo.to/",
-    },
-    timeout: 10000, // 10 second timeout
-  };
+    // Fetch the content from the final URL
+    const m3u8Response = await client.get(finalUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+      },
+      responseType: "text",
+    });
 
-  const request = https.get(targetUrl, options, (response) => {
-    console.log(`Status Code: ${response.statusCode}`);
-    console.log(`Headers: ${JSON.stringify(response.headers)}`);
+    // Modify the m3u8 content to point to our proxy for segment files
+    const baseUrl = finalUrl.substring(0, finalUrl.lastIndexOf("/") + 1);
+    let content = m3u8Response.data;
 
-    // If there's a redirect, follow it
-    if (
-      response.statusCode >= 300 &&
-      response.statusCode < 400 &&
-      response.headers.location
-    ) {
-      console.log(`Redirect found, following: ${response.headers.location}`);
+    // Replace all segment URLs with our proxy URLs
+    content = content.replace(/^(.*\.ts.*)$/gm, (match) => {
+      if (match.startsWith("#")) return match; // Skip comment/directive lines
+      const segmentPath = match.trim();
+      const fullSegmentUrl = new URL(segmentPath, baseUrl).toString();
+      return `/segment?url=${encodeURIComponent(fullSegmentUrl)}`;
+    });
 
-      // Make a new request to the redirect location
-      const redirectRequest = https.get(
-        response.headers.location,
-        options,
-        (redirectResponse) => {
-          console.log(`Redirect Status: ${redirectResponse.statusCode}`);
+    // Set proper headers for streaming
+    res.setHeader("Content-Type", "application/vnd.apple.mpegurl");
+    res.setHeader("Content-Disposition", "inline");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Cache-Control", "no-cache");
+    res.send(content);
+  } catch (error) {
+    console.error("Error fetching stream:", error.message);
+    res.status(500).send("Error fetching stream");
+  }
+});
 
-          // Set content type header for m3u8
-          res.setHeader("Content-Type", "application/vnd.apple.mpegurl");
+// Endpoint to proxy segment files
+app.get("/segment", async (req, res) => {
+  try {
+    const segmentUrl = req.query.url;
+    if (!segmentUrl) {
+      return res.status(400).send("Missing segment URL");
+    }
 
-          // Copy other important headers
-          if (redirectResponse.headers["content-disposition"]) {
-            res.setHeader(
-              "Content-Disposition",
-              redirectResponse.headers["content-disposition"]
-            );
-          }
+    const response = await client.get(segmentUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+      },
+      responseType: "arraybuffer",
+    });
 
-          // Pipe the response directly to the client
-          redirectResponse.pipe(res);
+    // Set proper headers for streaming segment files
+    res.setHeader("Content-Type", "video/MP2T");
+    res.setHeader("Content-Disposition", "inline");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Cache-Control", "no-cache");
+    res.send(Buffer.from(response.data));
+  } catch (error) {
+    console.error("Error fetching segment:", error.message);
+    res.status(500).send("Error fetching segment");
+  }
+});
 
-          redirectResponse.on("error", (err) => {
-            console.error("Redirect response error:", err.message);
-            if (!res.headersSent) {
-              res.status(500).send(`Error in stream: ${err.message}`);
-            }
+// HTML player sayfası
+app.get("/", (req, res) => {
+  const html = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>M3U8 Player</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+      body { margin: 0; background-color: #000; }
+      #video { width: 100%; height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <video id="video" controls autoplay></video>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const video = document.getElementById('video');
+        const streamUrl = '/stream';
+        
+        if (Hls.isSupported()) {
+          const hls = new Hls();
+          hls.loadSource(streamUrl);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.MANIFEST_PARSED, function() {
+            video.play();
+          });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = streamUrl;
+          video.addEventListener('loadedmetadata', function() {
+            video.play();
           });
         }
-      );
-
-      redirectRequest.on("error", (err) => {
-        console.error("Redirect request error:", err.message);
-        if (!res.headersSent) {
-          res.status(500).send(`Error following redirect: ${err.message}`);
-        }
       });
-
-      redirectRequest.on("timeout", () => {
-        console.error("Redirect request timed out");
-        redirectRequest.destroy();
-        if (!res.headersSent) {
-          res.status(504).send("Redirect request timed out");
-        }
-      });
-
-      return;
-    }
-
-    // No redirect, set content type for m3u8
-    res.setHeader("Content-Type", "application/vnd.apple.mpegurl");
-
-    // If there are any content disposition headers, copy them
-    if (response.headers["content-disposition"]) {
-      res.setHeader(
-        "Content-Disposition",
-        response.headers["content-disposition"]
-      );
-    }
-
-    // Pipe the response directly to the client
-    response.pipe(res);
-
-    response.on("error", (err) => {
-      console.error("Response error:", err.message);
-      if (!res.headersSent) {
-        res.status(500).send(`Error in stream: ${err.message}`);
-      }
-    });
-  });
-
-  request.on("error", (err) => {
-    console.error("Request error:", err.message);
-    if (!res.headersSent) {
-      res.status(500).send(`Error making request: ${err.message}`);
-    }
-  });
-
-  request.on("timeout", () => {
-    console.error("Request timed out");
-    request.destroy();
-    if (!res.headersSent) {
-      res.status(504).send("Request timed out");
-    }
-  });
+    </script>
+  </body>
+  </html>
+  `;
+  res.send(html);
 });
 
-// Also add a route to serve TS files if needed
-app.get("/*.ts", async (req, res) => {
-  // Extract the ts filename from the request
-  const tsFile = req.path.substring(1); // Remove leading slash
-
-  // Construct the URL for the ts file
-  const tsUrl = `https://vavoo.to/play/${tsFile}`;
-
-  console.log(`Requesting TS file: ${tsUrl}`);
-
-  const options = {
-    headers: {
-      "User-Agent": "VAVOO/1.0",
-      Accept: "*/*",
-      "Accept-Language": "en-US,en;q=0.9",
-      Referer: "https://vavoo.to/",
-    },
-    timeout: 10000,
-  };
-
-  const request = https.get(tsUrl, options, (response) => {
-    console.log(`TS File Status: ${response.statusCode}`);
-
-    // Set appropriate content type
-    res.setHeader("Content-Type", "video/mp2t");
-
-    // Pipe the response directly to the client
-    response.pipe(res);
-
-    response.on("error", (err) => {
-      console.error("TS response error:", err.message);
-      if (!res.headersSent) {
-        res.status(500).send(`Error in TS stream: ${err.message}`);
-      }
-    });
-  });
-
-  request.on("error", (err) => {
-    console.error("TS request error:", err.message);
-    if (!res.headersSent) {
-      res.status(500).send(`Error fetching TS file: ${err.message}`);
-    }
-  });
-
-  request.on("timeout", () => {
-    console.error("TS request timed out");
-    request.destroy();
-    if (!res.headersSent) {
-      res.status(504).send("TS request timed out");
-    }
-  });
-});
-
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Access the player at http://localhost:${PORT}/`);
+  console.log(`Access the stream at http://localhost:${PORT}/stream`);
 });
