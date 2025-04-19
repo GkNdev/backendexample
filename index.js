@@ -4,7 +4,7 @@ const port = process.env.PORT || 3000;
 
 app.get('/', async (req, res) => {
     const response = await fetch("https://vavoo.to/play/1536730627/index.m3u8");
-    res.redirect(res.location);
+    res.redirect(response.location);
 });
 
 app.listen(port, () => {
