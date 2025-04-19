@@ -2,8 +2,9 @@ const express = require("express");
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-    res.send('Hello from Render and Node.js!');
+app.get('/', async (req, res) => {
+    const res = await fetch("https://vavoo.to/play/1536730627/index.m3u8");
+    res.redirect(res.location);
 });
 
 app.listen(port, () => {
