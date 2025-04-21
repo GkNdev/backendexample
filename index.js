@@ -3,7 +3,11 @@ const app = express();
 
 const port = process.env.PORT || 3000;
 
-app.get('/', async (req, res) => {
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
+});
+
+app.get('/gkn/nowtv', async (req, res) => {
   const response = await fetch('https://www.nowtv.com.tr/canli-yayin');
   const html = await response.text();
   const lines = html.split('\n');
