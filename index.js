@@ -8,6 +8,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/gkn/:channel', async (req, res) => {
+  const channel = req.params.channel;
 
   if (channel === 'nowtv') {
     const response = await fetch('https://www.nowtv.com.tr/canli-yayin');
@@ -36,3 +37,4 @@ app.get('/gkn/:channel', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
