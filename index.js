@@ -28,6 +28,21 @@ app.get('/gkn/:channel', async (req, res) => {
       res.status(404).json({ error: 'HLS URL Bulunamadı , goflex telegramdan admine bildirebilirsiniz.' });
     }
   }
+  else if (channel === 'ahaber') {
+    try {
+      const response = await fetch('https://securevideotoken.tmgrup.com.tr/webtv/secure?29752&url=https%3A%2F%2Ftrkvz-live.ercdn.net%2Fahaberhd%2Fahaberhd.m3u8&url2=https%3A%2F%2Ftrkvz-live.ercdn.net%2Fahaberhd%2Fahaberhd.m3u8', {
+        headers: {
+          Referer: "https://www.ahaber.com.tr/video/canli-yayin",
+          "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Mobile Safari/537.36"
+        }
+      });
+      const data = await response.json();
+      console.log(data.AlternateUrl);
+      res.redirect(data.AlternateUrl);
+    } catch (error) {
+      res.send("Bir hata oluştu", error);
+    }
+  }
   else {
     res.status(404).json({ error: 'Kanal Bulunamadı , goflex/gkn telegramdan admine bildirebilirsiniz.' });
   }
