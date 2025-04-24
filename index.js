@@ -124,28 +124,10 @@ https://bcovlive-a.akamaihd.net/540fcb034b144b848e7ff887f61a293a/eu-central-1/64
 #EXT-X-VERSION:3
 #EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1500000,RESOLUTION=1920x1080
 https://bcovlive-a.akamaihd.net/29c60f23ea4840ba8726925a77fcfd0b/eu-central-1/6415845530001/profile_0/chunklist.m3u8`);
-    } else if (filename === "showturk.m3u8") {
-      console.log("Show Türk kanalı çalıştırıldı");
-      const response = await fetch(
-        "https://raw.githubusercontent.com/ipstreet312/freeiptv/refs/heads/master/ressources/tur/shturk.m3u8"
-      );
-      const m3u8Content = await response.text();
-      return res.send(`${m3u8Content}`);
-    } else if (filename === "showmax.m3u8") {
-      console.log("Show Max kanalı çalıştırıldı");
-      const response = await fetch(
-        "https://raw.githubusercontent.com/ipstreet312/freeiptv/refs/heads/master/ressources/tur/shmax.m3u8"
-      );
-      const m3u8Content = await response.text();
-      return res.send(`${m3u8Content}`);
-      return res.send(`#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1500000,RESOLUTION=1920x1080
-https://dogus-live.daioncdn.net/ntv/ntv.m3u8`);
     } else if (filename === "sozcu.m3u8") {
       console.log("Sözcü TV kanalı çalıştırıldı");
       return res.redirect(
-        "https://koprulu2.global.ssl.fastly.net/yt.m3u8/?id=ztmY_cCtUl0"
+        "https://koprulu2.global.ssl.fastly.net/yt.m3u8/?id=ztmY_cCtUl0&pp=ygURc8O2emPDvCB0diBjYW5sxLE%3D.m3u8"
       );
     } else if (filename === "ahaber.m3u8") {
       return res.redirect(
@@ -159,58 +141,26 @@ https://dogus-live.daioncdn.net/ntv/ntv.m3u8`);
       return res.redirect(
         "https://koprulu2.global.ssl.fastly.net/yt.m3u8/?id=VXMR3YQ7W3s"
       );
-    } else if (filename === "tabii.m3u8") {
-      res.send(`#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1500000,RESOLUTION=1920x1080
-https://beert7sqimrk0bfdupfgn6qew.medya.trt.com.tr/master_1080p.m3u8
-        `);
     } else if (filename === "tabii1.m3u8") {
-      res.send(`#EXTM3U
+      return res.send(`#EXTM3U
 #EXT-X-VERSION:3
 #EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1500000,RESOLUTION=1920x1080
-https://iaqzu4szhtzeqd0edpsayinle.medya.trt.com.tr/master_1080p.m3u8
-          `);
+https://iaqzu4szhtzeqd0edpsayinle.medya.trt.com.tr/master_1080p.m3u8`);
     } else if (filename === "tabii2.m3u8") {
-      res.send(`#EXTM3U
+      return res.send(`#EXTM3U
 #EXT-X-VERSION:3
 #EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1500000,RESOLUTION=1920x1080
-https://klublsslubcgyiz7zqt5bz8il.medya.trt.com.tr/master_1080p.m3u8
-            `);
-    } else if (filename === "tabii3.m3u8") {
-      res.send(`#EXTM3U
+https://klublsslubcgyiz7zqt5bz8il.medya.trt.com.tr/master_1080p.m3u8`);
+      return res.send(`#EXTM3U
 #EXT-X-VERSION:3
 #EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1500000,RESOLUTION=1920x1080
-https://ujnf69op16x2fiiywxcnx41q8.medya.trt.com.tr/master_1080p.m3u8
-              `);
-    } else if (filename === "tabii4.m3u8") {
-      res.send(`#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1500000,RESOLUTION=1920x1080
-https://bfxy3jgeydpbphtk8qfqwm3hr.medya.trt.com.tr/master_1080p.m3u8
-                `);
-    } else if (filename === "tabii5.m3u8") {
-      res.send(`#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1500000,RESOLUTION=1920x1080
-https://z3mmimwz148csv0vaxtphqspf.medya.trt.com.tr/master_1080p.m3u8
-                  `);
-    } else if (filename === "tabii6.m3u8") {
-      res.send(`#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1500000,RESOLUTION=1920x1080
-https://vbtob9hyq58eiophct5qctxr2.medya.trt.com.tr/master_1080p.m3u8
-                    `);
-    } else if (filename === "kvp.m3u8") {
-      return res.redirect(
-        "https://koprulu2.global.ssl.fastly.net/yt.m3u8/?id=XbTmCxei9R8"
-      );
+https://vbtob9hyq58eiophct5qctxr2.medya.trt.com.tr/master_1080p.m3u8`);
     } else if (filename === "eurostar.m3u8") {
       const response = await fetch(
         "https://github.com/ipstreet312/freeiptv/raw/refs/heads/master/ressources/tur/estar.m3u8"
       );
       const m3u8Content = await response.text();
-      return res.send(`${m3u8Content}`);
+      return res.send(m3u8Content);
     }
 
     return res.status(404).json({
