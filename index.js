@@ -14,7 +14,7 @@ app.get("/:filename", async (req, res) => {
   try {
     if (filename === "bein1.m3u8") {
       console.log("BeIN Sports 1 kanalı çalıştırıldı");
-      const response = await fetch("https://www.selcuksports115.top");
+      const response = await fetch("https://www.selcuksports122.top");
       const html = await response.text();
       const matches = html.matchAll(/data-streamx="([^"]*sports-1\.m3u8)"/g);
 
@@ -32,7 +32,7 @@ ${match[1]}`);
       });
     } else if (filename === "bein2.m3u8") {
       console.log("BeIN Sports 2 kanalı çalıştırıldı");
-      const response = await fetch("https://www.selcuksports115.top");
+      const response = await fetch("https://www.selcuksports122.top");
       const html = await response.text();
       const matches = html.matchAll(/data-streamx="([^"]*sports-2\.m3u8)"/g);
 
@@ -50,7 +50,7 @@ ${match[1]}`);
       });
     } else if (filename === "bein3.m3u8") {
       console.log("BeIN Sports 3 kanalı çalıştırıldı");
-      const response = await fetch("https://www.selcuksports115.top");
+      const response = await fetch("https://www.selcuksports122.top");
       const html = await response.text();
       const matches = html.matchAll(/data-streamx="([^"]*sports-3\.m3u8)"/g);
 
@@ -68,7 +68,7 @@ ${match[1]}`);
       });
     } else if (filename === "bein4.m3u8") {
       console.log("BeIN Sports 4 kanalı çalıştırıldı");
-      const response = await fetch("https://www.selcuksports115.top");
+      const response = await fetch("https://www.selcuksports122.top");
       const html = await response.text();
       const matches = html.matchAll(/data-streamx="([^"]*sports-4\.m3u8)"/g);
 
