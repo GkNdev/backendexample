@@ -1,8 +1,8 @@
 #EXTM3U
 #EXT-X-VERSION:3
 #EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=3000000,RESOLUTION=1920x1080
-https://vz-dbbd0bd5-afa.b-cdn.net/bfadcdd4-950c-463b-82db-2111e9dd9711/480p/video.m3u8
+http://tvx4k.camdvr.org/live/hls/509/playlist.m3u8
 #EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1500000,RESOLUTION=1280x720
-https://vz-dbbd0bd5-afa.b-cdn.net/bfadcdd4-950c-463b-82db-2111e9dd9711/480p/video.m3u8
+http://tvx4k.camdvr.org/live/hls/509/playlist.m3u8
 #EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=900000,RESOLUTION=854x480
-https://vz-dbbd0bd5-afa.b-cdn.net/bfadcdd4-950c-463b-82db-2111e9dd9711/480p/video.m3u8
+http://tvx4k.camdvr.org/live/hls/509/playlist.m3u8
